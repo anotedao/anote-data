@@ -7,6 +7,20 @@ import (
 	"gopkg.in/macaron.v1"
 )
 
+func minersView(ctx *macaron.Context) {
+	var miners []*Miner
+	var mnrs []*MinersResponse
+
+	db.Find(&miners)
+	for _, m := range miners {
+		mr := &MinersResponse{}
+		copier.Copy(mr, m)
+		mnrs = append(mnrs, mr)
+	}
+
+	ctx.JSON(200, mnrs)
+}
+
 func minerView(ctx *macaron.Context) {
 	addr := ctx.Params("addr")
 	var referred []*Miner
@@ -46,4 +60,11 @@ type MinerResponse struct {
 	ReferredCount    int
 	MinRefCount      int
 	ActiveMiners     int
+}
+
+type MinersResponse struct {
+	Address          string
+	LastNotification time.Time
+	TelegramId       int64
+	MiningHeight     int64
 }
