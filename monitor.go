@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/wavesplatform/gowaves/pkg/client"
@@ -13,7 +14,7 @@ import (
 type Monitor struct {
 }
 
-func (m *Monitor) loadMiners() {
+func (m *Monitor) loadMiners(minerType string) {
 	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
 	if err != nil {
 		log.Println(err)
@@ -22,7 +23,7 @@ func (m *Monitor) loadMiners() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	addr, err := proto.NewAddressFromString(MobileAddress)
+	addr, err := proto.NewAddressFromString(minerType)
 	if err != nil {
 		log.Println(err)
 	}
@@ -35,14 +36,28 @@ func (m *Monitor) loadMiners() {
 	for _, m := range entries {
 		miner := &Miner{}
 		db.FirstOrCreate(miner, &Miner{Address: m.GetKey()})
-		miner.MiningHeight = m.ToProtobuf().GetIntValue()
+
+		if minerType == MobileAddress {
+			miner.MiningHeight = m.ToProtobuf().GetIntValue()
+		} else {
+			encId := m.ToProtobuf().GetStringValue()
+			telId := DecryptMessage(encId)
+			telIdInt, err := strconv.Atoi(telId)
+			if err != nil {
+				log.Println(err)
+			}
+			miner.TelegramId = int64(telIdInt)
+		}
+
 		db.Save(miner)
 	}
 }
 
 func (m *Monitor) start() {
 	for {
-		m.loadMiners()
+		m.loadMiners(MobileAddress)
+
+		m.loadMiners(TelegramAddress)
 
 		log.Println("Done update.")
 
