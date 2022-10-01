@@ -53,11 +53,29 @@ func (m *Monitor) loadMiners(minerType string) {
 	}
 }
 
+func (m *Monitor) loadReferrals() {
+	var miners []*Miner
+	db.Find(&miners)
+
+	for _, m := range miners {
+		referral, _ := getData("referral", m.Address)
+
+		if referral != nil {
+			ref := &Miner{}
+			db.First(ref, &Miner{Address: referral.(string)})
+			m.ReferralID = ref.ID
+			db.Save(m)
+		}
+	}
+}
+
 func (m *Monitor) start() {
 	for {
 		m.loadMiners(MobileAddress)
 
 		m.loadMiners(TelegramAddress)
+
+		m.loadReferrals()
 
 		log.Println("Done update.")
 

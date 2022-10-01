@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -8,6 +9,10 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"net/http"
+
+	"github.com/wavesplatform/gowaves/pkg/client"
+	"github.com/wavesplatform/gowaves/pkg/proto"
 )
 
 func prettyPrint(i interface{}) string {
@@ -56,4 +61,37 @@ func DecryptMessage(message string) string {
 	stream.XORKeyStream(cipherText, cipherText)
 
 	return string(cipherText)
+}
+
+func getData(key string, address string) (interface{}, error) {
+	var a proto.WavesAddress
+
+	wc, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
+	if err != nil {
+		log.Println(err)
+	}
+
+	a, err = proto.NewAddressFromString(address)
+	if err != nil {
+		return nil, err
+	}
+
+	ad, _, err := wc.Addresses.AddressesDataKey(context.Background(), a, key)
+	if err != nil {
+		return nil, err
+	}
+
+	if ad.GetValueType().String() == "string" {
+		return ad.ToProtobuf().GetStringValue(), nil
+	}
+
+	if ad.GetValueType().String() == "boolean" {
+		return ad.ToProtobuf().GetBoolValue(), nil
+	}
+
+	if ad.GetValueType().String() == "integer" {
+		return ad.ToProtobuf().GetIntValue(), nil
+	}
+
+	return "", nil
 }
