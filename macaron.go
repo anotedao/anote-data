@@ -11,7 +11,7 @@ func initMacaron() *macaron.Macaron {
 	m.Use(macaron.Renderer())
 	m.Use(cache.Cacher())
 
-	// m.Get("/notification/:addr", viewNotification)
+	m.Get("/miner/:addr", minerView)
 
 	return m
 }

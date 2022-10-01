@@ -60,7 +60,7 @@ func (m *Monitor) loadReferrals() {
 	for _, m := range miners {
 		referral, _ := getData("referral", m.Address)
 
-		if referral != nil {
+		if referral != nil && referral.(string) != m.Address {
 			ref := &Miner{}
 			db.First(ref, &Miner{Address: referral.(string)})
 			m.ReferralID = ref.ID

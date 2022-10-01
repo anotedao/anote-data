@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/go-macaron/cache v0.0.0-20200329073519-53bb48172687
+	github.com/jinzhu/copier v0.3.5
 	github.com/wavesplatform/gowaves v0.10.1
 	gopkg.in/macaron.v1 v1.4.0
 	gorm.io/driver/sqlite v1.3.6
@@ -15,7 +16,6 @@ require (
 	github.com/btcsuite/btcd v0.22.1 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kilic/bls12-381 v0.0.0-20200820230200-6b2c19996391 // indirect

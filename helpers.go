@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/wavesplatform/gowaves/pkg/client"
 	"github.com/wavesplatform/gowaves/pkg/proto"
@@ -94,4 +95,22 @@ func getData(key string, address string) (interface{}, error) {
 	}
 
 	return "", nil
+}
+
+func getHeight() uint64 {
+	height := uint64(0)
+
+	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
+	if err != nil {
+		log.Println(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	bh, _, err := cl.Blocks.Height(ctx)
+
+	height = bh.Height
+
+	return height
 }
