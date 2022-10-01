@@ -18,6 +18,7 @@ func (m *Monitor) loadMiners(minerType string) {
 	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -26,11 +27,13 @@ func (m *Monitor) loadMiners(minerType string) {
 	addr, err := proto.NewAddressFromString(minerType)
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	entries, _, err := cl.Addresses.AddressesData(ctx, addr)
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	for _, m := range entries {
@@ -45,6 +48,7 @@ func (m *Monitor) loadMiners(minerType string) {
 			telIdInt, err := strconv.Atoi(telId)
 			if err != nil {
 				log.Println(err)
+				logTelegram(err.Error())
 			}
 			miner.TelegramId = int64(telIdInt)
 		}

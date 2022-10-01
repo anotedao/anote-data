@@ -7,9 +7,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"path"
+	"runtime"
 	"time"
 
 	"github.com/wavesplatform/gowaves/pkg/client"
@@ -26,12 +29,14 @@ func EncryptMessage(message string) string {
 	block, err := aes.NewCipher(conf.Password)
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	cipherText := make([]byte, aes.BlockSize+len(byteMsg))
 	iv := cipherText[:aes.BlockSize]
 	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
@@ -44,15 +49,18 @@ func DecryptMessage(message string) string {
 	cipherText, err := base64.StdEncoding.DecodeString(message)
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	block, err := aes.NewCipher(conf.Password)
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	if len(cipherText) < aes.BlockSize {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	iv := cipherText[:aes.BlockSize]
@@ -70,6 +78,7 @@ func getData(key string, address string) (interface{}, error) {
 	wc, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	a, err = proto.NewAddressFromString(address)
@@ -103,6 +112,7 @@ func getHeight() uint64 {
 	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
 	if err != nil {
 		log.Println(err)
+		logTelegram(err.Error())
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -113,4 +123,28 @@ func getHeight() uint64 {
 	height = bh.Height
 
 	return height
+}
+
+func getCallerInfo() (info string) {
+
+	// pc, file, lineNo, ok := runtime.Caller(2)
+	_, file, lineNo, ok := runtime.Caller(2)
+	if !ok {
+		info = "runtime.Caller() failed"
+		return
+	}
+	// funcName := runtime.FuncForPC(pc).Name()
+	fileName := path.Base(file) // The Base function returns the last element of the path
+	return fmt.Sprintf("%s:%d: ", fileName, lineNo)
+}
+
+func logTelegram(message string) {
+	message = "anote-data:" + getCallerInfo() + message
+
+	_, err := http.Get(fmt.Sprintf("http://localhost:5002/log/%s", message))
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		logTelegram(err.Error())
+	}
 }
