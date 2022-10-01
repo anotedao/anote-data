@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"runtime"
 	"time"
@@ -139,12 +140,10 @@ func getCallerInfo() (info string) {
 }
 
 func logTelegram(message string) {
-	message = "anote-data:" + getCallerInfo() + message
+	message = "anote-data:" + getCallerInfo() + url.PathEscape(url.QueryEscape(message))
 
 	_, err := http.Get(fmt.Sprintf("http://localhost:5002/log/%s", message))
 	if err != nil {
 		log.Println(err)
-		logTelegram(err.Error())
-		logTelegram(err.Error())
 	}
 }
