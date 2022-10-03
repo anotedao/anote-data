@@ -21,7 +21,7 @@ func (m *Monitor) loadMiners(minerType string) {
 		logTelegram(err.Error())
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	addr, err := proto.NewAddressFromString(minerType)
