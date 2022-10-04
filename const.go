@@ -9,5 +9,5 @@ const (
 
 	MobileAddress = "3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a"
 
-	TelegramAddress = "3ANmnLHt8mR9c36mdfQVpBtxUs8z1mMAHQW"
+	Sep = "__"
 )
