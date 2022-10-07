@@ -40,19 +40,6 @@ func (m *Monitor) loadMiners() {
 		miner := &Miner{}
 		db.FirstOrCreate(miner, &Miner{Address: m.GetKey()})
 
-		// if minerType == MobileAddress {
-		// 	miner.MiningHeight = m.ToProtobuf().GetIntValue()
-		// } else {
-		// 	encId := m.ToProtobuf().GetStringValue()
-		// 	telId := DecryptMessage(encId)
-		// 	telIdInt, err := strconv.Atoi(telId)
-		// 	if err != nil {
-		// 		log.Println(err)
-		// 		logTelegram(err.Error())
-		// 	}
-		// 	miner.TelegramId = int64(telIdInt)
-		// }
-
 		minerData := m.ToProtobuf().GetStringValue()
 
 		tel := parseItem(minerData, 0)
@@ -78,6 +65,23 @@ func (m *Monitor) loadMiners() {
 		}
 
 		db.Save(miner)
+	}
+
+	var dbminers []*Miner
+
+	db.Find(&dbminers)
+	for _, dbm := range dbminers {
+		found := false
+
+		for _, m := range entries {
+			if m.GetKey() == dbm.Address {
+				found = true
+			}
+		}
+
+		if !found {
+			db.Unscoped().Delete(&dbm)
+		}
 	}
 }
 
