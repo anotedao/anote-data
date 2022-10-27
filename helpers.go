@@ -53,17 +53,20 @@ func DecryptMessage(message string) string {
 	if err != nil {
 		log.Println(err)
 		logTelegram(err.Error())
+		return ""
 	}
 
 	block, err := aes.NewCipher(conf.Password)
 	if err != nil {
 		log.Println(err)
 		logTelegram(err.Error())
+		return ""
 	}
 
 	if len(cipherText) < aes.BlockSize {
 		log.Println(err)
 		logTelegram(err.Error())
+		return ""
 	}
 
 	iv := cipherText[:aes.BlockSize]

@@ -12,5 +12,6 @@ type Miner struct {
 	LastNotification time.Time
 	TelegramId       int64
 	MiningHeight     int64
-	ReferralID       uint `gorm:"index"`
+	ReferralID       uint   `gorm:"index"`
+	IP               string `gorm:"index;default:127.0.0.1"`
 }

@@ -44,7 +44,15 @@ func (m *Monitor) loadMiners() {
 
 		tel := parseItem(minerData, 0)
 		mh := parseItem(minerData, 1)
-		ref := parseItem(minerData, 2)
+		encIp := parseItem(minerData, 2)
+		ref := parseItem(minerData, 3)
+
+		if encIp != nil {
+			ip := DecryptMessage(encIp.(string))
+			if len(ip) > 0 {
+				miner.IP = ip
+			}
+		}
 
 		telId := DecryptMessage(tel.(string))
 		telIdInt, err := strconv.Atoi(telId)
