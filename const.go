@@ -5,7 +5,7 @@ const (
 
 	MonitorTick = 10
 
-	AnoteNodeURL = "https://nodes.anote.digital"
+	AnoteNodeURL = "http://localhost:6869"
 
 	MobileAddress = "3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a"
 
