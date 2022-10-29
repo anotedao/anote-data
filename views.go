@@ -52,6 +52,18 @@ func minerView(ctx *macaron.Context) {
 	ctx.JSON(200, mr)
 }
 
+func ipView(ctx *macaron.Context) {
+	var miners []*Miner
+
+	ipcr := &IPCountResponse{}
+	ip := ctx.Params("ip")
+
+	db.Find(&miners, &Miner{IP: ip})
+	ipcr.Count = len(miners)
+
+	ctx.JSON(200, ipcr)
+}
+
 type MinerResponse struct {
 	Address          string
 	LastNotification time.Time
@@ -67,4 +79,8 @@ type MinersResponse struct {
 	LastNotification time.Time
 	TelegramId       int64
 	MiningHeight     int64
+}
+
+type IPCountResponse struct {
+	Count int `json:"count"`
 }
