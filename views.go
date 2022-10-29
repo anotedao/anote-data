@@ -57,8 +57,9 @@ func ipView(ctx *macaron.Context) {
 
 	ipcr := &IPCountResponse{}
 	ip := ctx.Params("ip")
+	height := getHeight()
 
-	db.Find(&miners, &Miner{IP: ip})
+	db.Where("ip = ? AND mining_height > ?", ip, height-2880).Find(&miners)
 	ipcr.Count = len(miners)
 
 	ctx.JSON(200, ipcr)
