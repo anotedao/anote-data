@@ -3,7 +3,7 @@ package main
 const (
 	Port = 5003
 
-	MonitorTick = 10
+	MonitorTick = 30
 
 	AnoteNodeURL = "http://localhost:6869"
 

@@ -39,15 +39,16 @@ func minerView(ctx *macaron.Context) {
 	height := getHeight()
 	db.Where("mining_height > ?", height-2880).Find(&miners)
 	count = len(miners)
+	countRef := 0
 
 	mr.ActiveMiners = count
 
 	for _, m := range miners {
 		db.Find(&referred, &Miner{ReferralID: m.ID})
-		count += len(referred)
+		countRef += len(referred)
 	}
 
-	mr.MinRefCount = count
+	mr.MinRefCount = count + (countRef / 4)
 
 	ctx.JSON(200, mr)
 }
