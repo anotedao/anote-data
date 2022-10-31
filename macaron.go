@@ -15,6 +15,7 @@ func initMacaron() *macaron.Macaron {
 	m.Get("/miner/:addr", minerView)
 	m.Get("/ipcount/:ip", ipView)
 	m.Get("/confirmation/:addr", checkConfirmationView)
+	m.Get("/stats", statsView)
 
 	return m
 }

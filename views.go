@@ -107,6 +107,30 @@ func checkConfirmationView(ctx *macaron.Context) {
 	ctx.JSON(200, gr)
 }
 
+func statsView(ctx *macaron.Context) {
+	var miners []*Miner
+	sr := &StatsResponse{}
+	db.Find(&miners)
+	height := getHeight()
+
+	for _, m := range miners {
+		if height-uint64(m.MiningHeight) <= 1440 {
+			sr.ActiveMiners++
+			if m.ReferralID != 0 {
+				sr.ActiveReferred++
+			}
+		}
+
+		if height-uint64(m.MiningHeight) <= 2880 {
+			sr.PayoutMiners++
+		}
+	}
+
+	sr.InactiveMiners = len(miners) - sr.PayoutMiners
+
+	ctx.JSON(200, sr)
+}
+
 type MinerResponse struct {
 	Address          string    `json:"address"`
 	LastNotification time.Time `json:"last_notification"`
@@ -132,4 +156,11 @@ type IPCountResponse struct {
 
 type GeneralResponse struct {
 	Success bool `json:"success"`
+}
+
+type StatsResponse struct {
+	ActiveMiners   int `json:"active_miners"`
+	ActiveReferred int `json:"active_referred"`
+	PayoutMiners   int `json:"payout_miners"`
+	InactiveMiners int `json:"inactive_miners"`
 }
