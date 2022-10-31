@@ -14,4 +14,5 @@ type Miner struct {
 	MiningHeight     int64
 	ReferralID       uint   `gorm:"index"`
 	IP               string `gorm:"index;default:127.0.0.1"`
+	Confirmed        bool   `gorm:"default:false"`
 }

@@ -10,4 +10,6 @@ const (
 	MobileAddress = "3ANzidsKXn9a1s9FEbWA19hnMgV9zZ2RB9a"
 
 	Sep = "__"
+
+	Fee = 100000
 )

@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"log"
+	"net/http"
 	"time"
 
 	"github.com/jinzhu/copier"
+	"github.com/wavesplatform/gowaves/pkg/client"
+	"github.com/wavesplatform/gowaves/pkg/proto"
 	"gopkg.in/macaron.v1"
 )
 
@@ -33,10 +38,12 @@ func minerView(ctx *macaron.Context) {
 	mr := &MinerResponse{}
 	copier.Copy(mr, m)
 
-	db.Find(&referred, &Miner{ReferralID: m.ID})
+	height := getHeight()
+
+	// db.Find(&referred, &Miner{ReferralID: m.ID})
+	db.Where("mining_height > ? AND referral_id = ?", height-1440, m.ID).Find(&referred)
 	mr.ReferredCount = len(referred)
 
-	height := getHeight()
 	db.Where("mining_height > ?", height-2880).Find(&miners)
 	count = len(miners)
 	countRef := 0
@@ -44,10 +51,12 @@ func minerView(ctx *macaron.Context) {
 	mr.ActiveMiners = count
 
 	for _, m := range miners {
-		db.Find(&referred, &Miner{ReferralID: m.ID})
-		countRef += len(referred)
+		if m.ReferralID != 0 {
+			countRef++
+		}
 	}
 
+	mr.ActiveReferred = countRef
 	mr.MinRefCount = count + (countRef / 4)
 
 	ctx.JSON(200, mr)
@@ -66,23 +75,61 @@ func ipView(ctx *macaron.Context) {
 	ctx.JSON(200, ipcr)
 }
 
+func checkConfirmationView(ctx *macaron.Context) {
+	addr := ctx.Params("addr")
+	m := &Miner{}
+	db.First(m, &Miner{Address: addr})
+	log.Println(prettyPrint(m))
+
+	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+	}
+
+	c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	a := proto.MustAddressFromString(addr)
+
+	balance, _, err := cl.Addresses.Balance(c, a)
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+	}
+
+	if balance.Balance >= Fee {
+		m.Confirmed = true
+		db.Save(m)
+	}
+
+	gr := &GeneralResponse{Success: true}
+	ctx.JSON(200, gr)
+}
+
 type MinerResponse struct {
-	Address          string
-	LastNotification time.Time
-	TelegramId       int64
-	MiningHeight     int64
-	ReferredCount    int
-	MinRefCount      int
-	ActiveMiners     int
+	Address          string    `json:"address"`
+	LastNotification time.Time `json:"last_notification"`
+	TelegramId       int64     `json:"telegram_id"`
+	MiningHeight     int64     `json:"mining_height"`
+	ReferredCount    int       `json:"referred_count"`
+	MinRefCount      int       `json:"min_ref_count"`
+	ActiveMiners     int       `json:"active_miners"`
+	ActiveReferred   int       `json:"active_referred"`
+	Confirmed        bool      `json:"confirmed"`
 }
 
 type MinersResponse struct {
-	Address          string
-	LastNotification time.Time
-	TelegramId       int64
-	MiningHeight     int64
+	Address          string    `json:"address"`
+	LastNotification time.Time `json:"last_notification"`
+	TelegramId       int64     `json:"telegram_id"`
+	MiningHeight     int64     `json:"mining_height"`
 }
 
 type IPCountResponse struct {
 	Count int `json:"count"`
+}
+
+type GeneralResponse struct {
+	Success bool `json:"success"`
 }
