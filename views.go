@@ -29,8 +29,6 @@ func minersView(ctx *macaron.Context) {
 func minerView(ctx *macaron.Context) {
 	addr := ctx.Params("addr")
 	var referred []*Miner
-	var miners []*Miner
-	var count int
 
 	m := &Miner{}
 	db.First(m, &Miner{Address: addr})
@@ -40,24 +38,8 @@ func minerView(ctx *macaron.Context) {
 
 	height := getHeight()
 
-	// db.Find(&referred, &Miner{ReferralID: m.ID})
 	db.Where("mining_height > ? AND referral_id = ?", height-1440, m.ID).Find(&referred)
 	mr.ReferredCount = len(referred)
-
-	db.Where("mining_height > ?", height-2880).Find(&miners)
-	count = len(miners)
-	countRef := 0
-
-	mr.ActiveMiners = count
-
-	for _, m := range miners {
-		if m.ReferralID != 0 {
-			countRef++
-		}
-	}
-
-	mr.ActiveReferred = countRef
-	mr.MinRefCount = count + (countRef / 4)
 
 	ctx.JSON(200, mr)
 }
@@ -137,9 +119,6 @@ type MinerResponse struct {
 	TelegramId       int64     `json:"telegram_id"`
 	MiningHeight     int64     `json:"mining_height"`
 	ReferredCount    int       `json:"referred_count"`
-	MinRefCount      int       `json:"min_ref_count"`
-	ActiveMiners     int       `json:"active_miners"`
-	ActiveReferred   int       `json:"active_referred"`
 	Confirmed        bool      `json:"confirmed"`
 }
 
