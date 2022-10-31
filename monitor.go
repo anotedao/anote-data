@@ -72,6 +72,28 @@ func (m *Monitor) loadMiners() {
 			}
 		}
 
+		// cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
+		// if err != nil {
+		// 	log.Println(err)
+		// 	logTelegram(err.Error())
+		// }
+
+		// c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		// defer cancel()
+
+		// a := proto.MustAddressFromString(miner.Address)
+
+		// balance, _, err := cl.Addresses.Balance(c, a)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	logTelegram(err.Error())
+		// }
+
+		// if balance.Balance >= Fee {
+		// 	miner.Confirmed = true
+		// 	miner.Balance = balance.Balance
+		// }
+
 		db.Save(miner)
 	}
 

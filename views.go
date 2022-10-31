@@ -38,7 +38,7 @@ func minerView(ctx *macaron.Context) {
 
 	height := getHeight()
 
-	db.Where("mining_height > ? AND referral_id = ?", height-1440, m.ID).Find(&referred)
+	db.Where("mining_height > ? AND referral_id = ? AND confirmed = 1", height-1440, m.ID).Find(&referred)
 	mr.ReferredCount = len(referred)
 
 	ctx.JSON(200, mr)
@@ -82,6 +82,7 @@ func checkConfirmationView(ctx *macaron.Context) {
 
 	if balance.Balance >= Fee {
 		m.Confirmed = true
+		m.Balance = balance.Balance
 		db.Save(m)
 	}
 
@@ -98,7 +99,7 @@ func statsView(ctx *macaron.Context) {
 	for _, m := range miners {
 		if height-uint64(m.MiningHeight) <= 1440 {
 			sr.ActiveMiners++
-			if m.ReferralID != 0 {
+			if m.ReferralID != 0 && m.Confirmed {
 				sr.ActiveReferred++
 			}
 		}
