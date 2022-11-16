@@ -112,7 +112,7 @@ func (m *Monitor) loadMiners() {
 		}
 
 		if !found {
-			db.Unscoped().Delete(&dbm)
+			db.Delete(&dbm)
 		}
 	}
 }
