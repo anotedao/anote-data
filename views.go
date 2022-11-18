@@ -38,8 +38,13 @@ func minerView(ctx *macaron.Context) {
 
 	height := getHeight()
 
-	db.Where("mining_height > ? AND referral_id = ? AND confirmed = 1", height-1440, m.ID).Find(&referred)
-	mr.ReferredCount = len(referred)
+	if m.ID != 0 {
+		db.Where("mining_height > ? AND referral_id = ? AND confirmed = 1", height-1440, m.ID).Find(&referred)
+		mr.ReferredCount = len(referred)
+		mr.Exists = true
+	} else {
+		mr.Exists = false
+	}
 
 	ctx.JSON(200, mr)
 }
@@ -121,6 +126,7 @@ type MinerResponse struct {
 	MiningHeight     int64     `json:"mining_height"`
 	ReferredCount    int       `json:"referred_count"`
 	Confirmed        bool      `json:"confirmed"`
+	Exists           bool      `json:"exists"`
 }
 
 type MinersResponse struct {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/wavesplatform/gowaves/pkg/client"
@@ -69,6 +70,9 @@ func (m *Monitor) loadMiners() {
 			db.First(refdb, &Miner{Address: ref.(string)})
 			if refdb.ID != 0 {
 				miner.ReferralID = refdb.ID
+			} else {
+				minerData = updateItem(minerData, "", 3)
+				dataTransaction(m.GetKey(), &minerData, nil, nil)
 			}
 		}
 
@@ -82,21 +86,29 @@ func (m *Monitor) loadMiners() {
 			c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			a := proto.MustAddressFromString(miner.Address)
-
-			balance, _, err := cl.Addresses.Balance(c, a)
+			a, err := proto.NewAddressFromString(miner.Address)
 			if err != nil {
-				log.Println(err)
+				log.Println(err.Error())
 				logTelegram(err.Error())
-			}
+			} else {
+				balance, _, err := cl.Addresses.Balance(c, a)
+				if err != nil {
+					log.Println(err)
+					logTelegram(err.Error())
+				}
 
-			if balance.Balance >= Fee {
-				miner.Confirmed = true
-				miner.Balance = balance.Balance
+				if balance.Balance >= Fee {
+					miner.Confirmed = true
+					miner.Balance = balance.Balance
+				}
 			}
 		}
 
-		db.Save(miner)
+		if err := db.Save(miner).Error; err != nil {
+			if strings.Contains(err.Error(), "UNIQUE") {
+				dataTransaction(miner.Address, nil, nil, nil)
+			}
+		}
 	}
 
 	var dbminers []*Miner
@@ -113,6 +125,7 @@ func (m *Monitor) loadMiners() {
 
 		if !found {
 			db.Delete(&dbm)
+			dataTransaction(dbm.Address, nil, nil, nil)
 		}
 	}
 }

@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/wavesplatform/gowaves/pkg/client"
+	"github.com/wavesplatform/gowaves/pkg/crypto"
 	"github.com/wavesplatform/gowaves/pkg/proto"
 )
 
@@ -195,4 +196,91 @@ func updateItem(value string, newval interface{}, index int) string {
 	}
 
 	return strings.Join(values, Sep)
+}
+
+func dataTransaction(key string, valueStr *string, valueInt *int64, valueBool *bool) error {
+	// Create sender's public key from BASE58 string
+	sender, err := crypto.NewPublicKeyFromBase58(conf.PublicKey)
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		return err
+	}
+
+	// Create sender's private key from BASE58 string
+	sk, err := crypto.NewSecretKeyFromBase58(conf.PrivateKey)
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		return err
+	}
+
+	// Current time in milliseconds
+	ts := time.Now().Unix() * 1000
+
+	tr := proto.NewUnsignedDataWithProofs(2, sender, Fee, uint64(ts))
+
+	if valueStr == nil && valueInt == nil && valueBool == nil {
+		tr.Entries = append(tr.Entries,
+			&proto.DeleteDataEntry{
+				Key: key,
+			},
+		)
+	}
+
+	if valueStr != nil {
+		tr.Entries = append(tr.Entries,
+			&proto.StringDataEntry{
+				Key:   key,
+				Value: *valueStr,
+			},
+		)
+	}
+
+	if valueInt != nil {
+		tr.Entries = append(tr.Entries,
+			&proto.IntegerDataEntry{
+				Key:   key,
+				Value: *valueInt,
+			},
+		)
+	}
+
+	if valueBool != nil {
+		tr.Entries = append(tr.Entries,
+			&proto.BooleanDataEntry{
+				Key:   key,
+				Value: *valueBool,
+			},
+		)
+	}
+
+	err = tr.Sign(55, sk)
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		return err
+	}
+
+	// Create new HTTP client to send the transaction to public TestNet nodes
+	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		return err
+	}
+
+	// Context to cancel the request execution on timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// // Send the transaction to the network
+	_, err = cl.Transactions.Broadcast(ctx, tr)
+	if err != nil {
+		log.Println(err)
+		logTelegram(err.Error())
+		return err
+	}
+
+	return nil
 }
