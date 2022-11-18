@@ -66,7 +66,6 @@ func checkConfirmationView(ctx *macaron.Context) {
 	addr := ctx.Params("addr")
 	m := &Miner{}
 	db.First(m, &Miner{Address: addr})
-	log.Println(prettyPrint(m))
 
 	cl, err := client.NewClient(client.Options{BaseUrl: AnoteNodeURL, Client: &http.Client{}})
 	if err != nil {
