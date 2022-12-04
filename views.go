@@ -49,6 +49,24 @@ func minerView(ctx *macaron.Context) {
 	ctx.JSON(200, mr)
 }
 
+func pingView(ctx *macaron.Context) {
+	addr := ctx.Params("addr")
+
+	m := &Miner{}
+	db.First(m, &Miner{Address: addr})
+
+	pr := &PingResponse{}
+
+	m.PingCount++
+	m.LastPing = time.Now()
+	db.Save(m)
+
+	pr.LastPing = m.LastPing
+	pr.PingCount = m.PingCount
+
+	ctx.JSON(200, pr)
+}
+
 func ipView(ctx *macaron.Context) {
 	var miners []*Miner
 
@@ -148,4 +166,9 @@ type StatsResponse struct {
 	ActiveReferred int `json:"active_referred"`
 	PayoutMiners   int `json:"payout_miners"`
 	InactiveMiners int `json:"inactive_miners"`
+}
+
+type PingResponse struct {
+	PingCount int64     `json:"ping_count"`
+	LastPing  time.Time `json:"last_ping"`
 }

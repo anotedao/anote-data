@@ -107,7 +107,7 @@ func (m *Monitor) loadMiners() {
 
 		if err := db.Save(miner).Error; err != nil {
 			if strings.Contains(err.Error(), "UNIQUE") {
-				dataTransaction(miner.Address, nil, nil, nil)
+				// dataTransaction(miner.Address, nil, nil, nil)
 			}
 		}
 	}
@@ -126,7 +126,7 @@ func (m *Monitor) loadMiners() {
 
 		if !found {
 			db.Delete(&dbm)
-			dataTransaction(dbm.Address, nil, nil, nil)
+			// dataTransaction(dbm.Address, nil, nil, nil)
 		}
 	}
 }

@@ -16,4 +16,6 @@ type Miner struct {
 	IP               string `gorm:"index;default:127.0.0.1"`
 	Confirmed        bool   `gorm:"default:false"`
 	Balance          uint64
+	LastPing         time.Time
+	PingCount        int64
 }
