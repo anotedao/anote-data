@@ -13,7 +13,7 @@ func initDb() *gorm.DB {
 	var err error
 	dbconf := gorm.Config{}
 
-	dbconf.Logger = logger.Default.LogMode(logger.Error)
+	dbconf.Logger = logger.Default.LogMode(logger.Info)
 
 	db, err = gorm.Open(sqlite.Open("anote.db"), &dbconf)
 

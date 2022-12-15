@@ -72,7 +72,7 @@ func (m *Monitor) loadMiners() {
 				miner.ReferralID = refdb.ID
 			} else {
 				minerData = updateItem(minerData, "", 3)
-				dataTransaction(m.GetKey(), &minerData, nil, nil)
+				// dataTransaction(m.GetKey(), &minerData, nil, nil)
 			}
 		}
 
