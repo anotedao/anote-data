@@ -67,6 +67,20 @@ func pingView(ctx *macaron.Context) {
 	ctx.JSON(200, pr)
 }
 
+func resetPingView(ctx *macaron.Context) {
+	addr := ctx.Params("addr")
+
+	m := &Miner{}
+	db.First(m, &Miner{Address: addr})
+
+	gr := &GeneralResponse{Success: true}
+
+	m.PingCount = 0
+	db.Save(m)
+
+	ctx.JSON(200, gr)
+}
+
 func ipView(ctx *macaron.Context) {
 	var miners []*Miner
 
@@ -117,6 +131,7 @@ func statsView(ctx *macaron.Context) {
 	sr := &StatsResponse{}
 	db.Find(&miners)
 	height := getHeight()
+	pc := 0
 
 	for _, m := range miners {
 		if height-uint64(m.MiningHeight) <= 1440 {
@@ -128,10 +143,12 @@ func statsView(ctx *macaron.Context) {
 
 		if height-uint64(m.MiningHeight) <= 2880 {
 			sr.PayoutMiners++
+			pc += int(m.PingCount)
 		}
 	}
 
 	sr.InactiveMiners = len(miners) - sr.PayoutMiners
+	sr.PingCount = pc
 
 	ctx.JSON(200, sr)
 }
@@ -144,6 +161,7 @@ type MinerResponse struct {
 	ReferredCount    int       `json:"referred_count"`
 	Confirmed        bool      `json:"confirmed"`
 	Exists           bool      `json:"exists"`
+	PingCount        int64     `json:"ping_count"`
 }
 
 type MinersResponse struct {
@@ -166,6 +184,7 @@ type StatsResponse struct {
 	ActiveReferred int `json:"active_referred"`
 	PayoutMiners   int `json:"payout_miners"`
 	InactiveMiners int `json:"inactive_miners"`
+	PingCount      int `json:"ping_count"`
 }
 
 type PingResponse struct {
