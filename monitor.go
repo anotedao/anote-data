@@ -90,7 +90,7 @@ func (m *Monitor) loadMiners() {
 			if err != nil {
 				log.Println(err.Error())
 				logTelegram(err.Error())
-				db.Delete(miner)
+				// db.Delete(miner)
 			} else {
 				balance, _, err := cl.Addresses.Balance(c, a)
 				if err != nil {
@@ -125,7 +125,7 @@ func (m *Monitor) loadMiners() {
 		}
 
 		if !found {
-			db.Delete(&dbm)
+			// db.Delete(&dbm)
 			// dataTransaction(dbm.Address, nil, nil, nil)
 		}
 	}
