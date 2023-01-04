@@ -19,8 +19,6 @@ func main() {
 
 	initMonitor()
 
-	m := initMacaron()
-
 	// var dbminers []*Miner
 
 	// db.Unscoped().Find(&dbminers)
@@ -47,6 +45,4 @@ func main() {
 	// 		log.Println(i)
 	// 	}
 	// }
-
-	m.Run("127.0.0.1", Port)
 }

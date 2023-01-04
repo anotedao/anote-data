@@ -65,7 +65,7 @@ func (m *Monitor) loadMiners() {
 		if mh != nil {
 			miner.MiningHeight = int64(mh.(int))
 		}
-		if ref != nil {
+		if ref != nil && len(ref.(string)) > 0 {
 			refdb := &Miner{}
 			db.First(refdb, &Miner{Address: ref.(string)})
 			if refdb.ID != 0 {
